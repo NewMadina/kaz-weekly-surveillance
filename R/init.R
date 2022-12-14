@@ -12,6 +12,10 @@ c(
   here("data/raw/measles"),
   here("data/int"), 
   here("data/int/polio"),
-  here("data/int/measles")
+  here("data/int/measles"), 
+  here("data/raw/spatial"), 
+  here("data/raw/pop"),
+  here("data/raw/polio/afp"),
+  here('data/raw/polio/vacc_cov')
 ) |> 
   sapply(dir.create)
