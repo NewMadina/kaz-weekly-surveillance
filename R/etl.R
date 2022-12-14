@@ -106,10 +106,70 @@ rm(test_pop)
 rm(y)
 
 #load vaccine data
+list.files(here("data/raw/vaccination/"), recursive = T, include.dirs = T, 
+           pattern = ".xls", full.names = T) |> 
+  as_tibble() |> 
+  rowwise() |>
+  mutate(l = length(str_split(value, "/")[[1]]), 
+         file = str_split(value, "/")[[1]][l] |> str_replace(".xls", ""),
+         year = str_split(file, "_")[[1]][3], 
+         month = str_split(file, "_")[[1]][2]) |>
+  mutate(month = as.numeric(month), 
+         year = as.numeric(year)) %>% 
+  group_by(year) |> 
+  filter(month == max(month)) |> 
+  pull(value) %>%
+  {.[1]} -> x
 
 
+#load measles data
+x <- list.files(here("data/raw/measles"), full.names = T, recursive = T, pattern = "xls") %>%
+  {.[1]}
+
+file <- read_excel("C:/Users/ynm2/Desktop/gitrepos/kaz-weekly-surveillance/data/raw/measles/2014_07.xlsx", sheet = "Корь", skip = 5) |> 
+  select(c("...1","Число подтвержденных случаевНРЛ +ЦСЭЭ (суммарно)"))
 
 
+#read in vaccination coverage data
+x <- list.files(here("data/raw/vaccination/cumulative/"), full.names = T) |>
+  lapply(extract_vacc) |> 
+  bind_rows() |> 
+  mutate(prov = case_when(
+    prov == "Ақмола" ~ "Акмолинская",
+    prov == "Ақтөбе" ~ "Актюбинская",
+    prov == "Алматы" ~ "Алматинская",
+    prov == "Атырау" ~ "Атырауская",
+    prov == "Шығыс Қазақстан" ~ "Восточно-Казахстанская",
+    prov == "Жамбыл" ~ "Жамбылская",
+    prov == "Батыс-Казақстан" ~ "Западно-Казахстанская",
+    prov == "Қарағанды" ~ "Карагандинская",
+    prov == "Қостанай" ~ "Костанайская",
+    prov == "Кызылорда" ~ "Кызылординская",
+    prov == "Манғыстау" ~ "Мангистауская",
+    prov == "Павлодар" ~ "Павлодарская",
+    prov == "Солтұстіқ-Казақстан" ~ "Северо-Казахстанская",
+    prov == "Оңтустіқ-Казақстан" ~ "Южно-Казахстанская",
+    prov == "Алматы қаласы" ~ "г. Алматы",
+    prov == "Астана қаласы" ~ "г. Астана",
+    prov == "Туркістан" ~ "Туркестанская",
+    prov == "Нұр-Сұлтан қаласы" ~ "г. Астана",
+    prov == "Шымкент қаласы" ~ "г. Шымкент",
+    T ~ prov
+  ))
 
+
+x <- x |> 
+  #mutate(mmr2_pcov = ifelse((prov == "Западно-Казахстанская"), mmr2_right_age/`6_num_end`*100, mmr2_pcov)) |>
+  mutate(
+    `6_num_end` = `6_num_begin`-`6_num_died`+`6_trans_in`-`6_trans_out`,
+    adj_mmr2_pcov = mmr2_right_age/(`6_num_end`+mmr_no_vacc_refusal+mmr_no_vacc_perm_ci+(mmr_no_vacc_temp_ci/12))*100
+  ) |>
+  mutate(diff_mmr2_pcov = mmr2_pcov - adj_mmr2_pcov) |> 
+  mutate(year = factor(year, levels = as.character(2013:2022)),
+         diff_mmr2_pcov = diff_mmr2_pcov / 100)
+
+kaz$vacc_cov <- x
+
+rm(x)
 
 
