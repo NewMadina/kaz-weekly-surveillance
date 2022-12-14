@@ -87,7 +87,7 @@ test_pop <- lapply(2013:2021, function(x){
   bind_rows() |> 
   bind_rows(y)
 
-test_pop <- test_pop |> 
+kaz$pop_extrapolated <- test_pop |> 
   ungroup() |>
   group_by(year) |> 
   group_split() |>
@@ -100,5 +100,16 @@ test_pop <- test_pop |>
       bind_rows()
   }) |> 
   bind_rows() 
+
+rm(x)
+rm(test_pop)
+rm(y)
+
+#load vaccine data
+
+
+
+
+
 
 
