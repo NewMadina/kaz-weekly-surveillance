@@ -43,3 +43,4 @@ data/
 output/
 misc/
 R/sandbox.R
+resources/original.locale.rds
