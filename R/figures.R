@@ -87,9 +87,7 @@ fig2 <- z |>
   ggplot() + 
   geom_tile(aes(x = date, y = prov, fill = afp_rate), 
             color = "white", size = 0.02) + 
-  #scale_fill_viridis_d(option = "plasma") +
-  scale_fill_brewer(palette = "Reds", direction = 1) +
-  #scale_fill_brewer(palette = "Diamond\nclarity", direction = 1) +
+  scale_fill_brewer(direction = 1) +
   theme_classic() + 
   labs (fill = "Показатель\nзаболеваемости\nОВП", y = "Территории", x = "Дата",
        title = "Динамика заболеваемости ОВП, РК, 2013-2022 гг.", 
@@ -97,5 +95,85 @@ fig2 <- z |>
 
 
 ggsave(here("output/fig2.png"), fig2, height = 3, width = 12, dpi = 300)
+
+#Reported measles coverage
+order_of_names <- kaz$vacc_cov |> 
+  group_by(prov) |> 
+  summarize(avg = mean(mmr2_pcov)) |> 
+  arrange(avg) |> 
+  pull(prov)
+
+fig3 <- kaz$vacc_cov |> 
+  select(prov, year, mmr2_pcov) |> 
+  mutate(year = factor(year, levels = as.character(2013:2022)),
+         mmr2_pcov = mmr2_pcov / 100, 
+         prov = factor(prov, levels = order_of_names)) |>
+  ggplot() +
+  geom_tile(aes(x = year, y = prov, fill = mmr2_pcov), color = "black") +
+  scale_fill_viridis_c(labels = scales::percent, direction = -1, limits = c(0.75,1.05)) + 
+  theme_bw() +
+  theme(
+    panel.grid = element_blank()
+  )
+
+#adjusted measles coverage
+
+fig4 <- kaz$vacc_cov |> 
+  select(prov, year, adj_mmr2_pcov) |> 
+  mutate(year = factor(year, levels = as.character(2013:2022)),
+         adj_mmr2_pcov = adj_mmr2_pcov / 100, 
+         prov = factor(prov, levels = order_of_names)) |>
+  ggplot() +
+  geom_tile(aes(x = year, y = prov, fill = adj_mmr2_pcov), color = "black") +
+  scale_fill_viridis_c(labels = scales::percent, direction = -1, limit = c(0.75, 1.05)) + 
+  theme_bw() +
+  theme(
+    panel.grid = element_blank()
+  )
+
+ggsave(here("output/fig3_4.png"),plot = ggarrange(fig3, fig4), dpi = 300, width = 18, height = 6)
+
+
+#Reported OPV coverage
+order_of_names <- kaz$vacc_cov |> 
+  group_by(prov) |> 
+  summarize(avg = mean(bopv4_pcov)) |> 
+  arrange(avg) |> 
+  pull(prov)
+
+fig5 <- kaz$vacc_cov |> 
+  select(prov, year, bopv4_pcov) |> 
+  mutate(year = factor(year, levels = as.character(2013:2022)),
+         bopv4_pcov = bopv4_pcov / 100, 
+         prov = factor(prov, levels = order_of_names)) |>
+  ggplot() +
+  geom_tile(aes(x = year, y = prov, fill = bopv4_pcov), color = "black") +
+  scale_fill_viridis_c(labels = scales::percent, direction = -1) + 
+  theme_bw() +
+  theme(
+    panel.grid = element_blank()
+  )
+
+ggsave(here("output/fig5.png"),plot = fig5, dpi = 300, width = 8, height = 6)
+
+
+#difference in reported and adjusted measles coverage
+order_of_names <- kaz$vacc_cov |> 
+  group_by(prov) |> 
+  summarize(avg = mean(diff_mmr2_pcov)) |> 
+  arrange(avg) |> 
+  pull(prov)
+
+fig6 <- kaz$vacc_cov |> 
+  mutate(prov = factor(prov, levels = order_of_names)) |>
+  ggplot() +
+  geom_tile(aes(x = year, y = prov, fill = diff_mmr2_pcov), color = "black") +
+  scale_fill_gradient2(low = muted("green"), high = muted("red"), midpoint = 0, labels = scales::percent) + 
+  theme_bw() +
+  theme(
+    panel.grid = element_blank()
+  )
+
+ggsave(here("output/fig6.png"),plot = fig6, dpi = 300, width = 8, height = 6)
 
 
