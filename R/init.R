@@ -19,3 +19,8 @@ c(
   here('data/raw/polio/vacc_cov')
 ) |> 
   sapply(dir.create)
+
+
+original_locale <- Sys.getlocale()
+write_rds(original_locale, "resources/original.locale.rds")
+
