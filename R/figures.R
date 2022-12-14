@@ -88,11 +88,16 @@ fig2 <- z |>
   geom_tile(aes(x = date, y = prov, fill = afp_rate), 
             color = "white", size = 0.02) + 
   #scale_fill_viridis_d(option = "plasma") +
-  scale_fill_brewer(palette = "Reds", direction = 1) +
+ #scale_fill_brewer(palette = "Reds", direction = 1) +
+  scale_fill_brewer(palette = "Diamond\nclarity", direction = 1) +
   theme_classic() + 
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1)
-  )
+  )+
+  labs (fill = "afp_rate", y = "Территории", 
+       title = "Динамика заболеваемости полиомиелитом, РК, 2013-2022 гг.", 
+       caption = "Не смотря на выявление ОВП в большинстве территорий, /nсуществуют несколько территорий с нулевым показателем заболеваемости ОВП в течении последних 2 лет")
+
 
 ggsave(here("output/fig2.png"), fig2, height = 3, width = 12, dpi = 300)
 
