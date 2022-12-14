@@ -42,3 +42,4 @@ vignettes/*.pdf
 data/
 output/
 misc/
+R/sandbox.R
