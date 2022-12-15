@@ -109,11 +109,14 @@ fig3 <- kaz$vacc_cov |>
          mmr2_pcov = mmr2_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = год, y = территория, fill = "охват вакцинацией \nподлежащего населения \nпо форме №4"), color = "black") +
+  geom_tile(aes(x = year, y = prov, fill = mmr2_pcov), color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1, limits = c(0.75,1.05)) + 
   theme_bw() +
   theme(
     panel.grid = element_blank()
+  ) +
+  labs(
+    x = "год", y = "территория", fill = "охват вакцинацией \nподлежащего населения \nпо форме №4"
   )
 
 #adjusted measles coverage
@@ -124,14 +127,42 @@ fig4 <- kaz$vacc_cov |>
          adj_mmr2_pcov = adj_mmr2_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = год, y = территория, fill = "скорректированные \nданные с учетом отказов \nи медицинских противопоказаний"), color = "black") +
+  geom_tile(aes(x = year, y = prov, fill = adj_mmr2_pcov), color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1, limit = c(0.75, 1.05)) + 
   theme_bw() +
   theme(
     panel.grid = element_blank()
+  ) +
+  labs(
+    x = "год", y = "территория", fill = "скорректированные \nданные с учетом отказов \nи медицинских противопоказаний"
   )
 
 x <- "График сравнительного анализа охвата вакцинацией против кори,РК, 2013-2022гг."
+
+
+kaz$vacc_cov |> 
+  select(prov, year, mmr2_pcov, adj_mmr2_pcov) |> 
+  mutate(year = factor(year, levels = as.character(2013:2022)),
+         mmr2_pcov = mmr2_pcov / 100, 
+         adj_mmr2_pcov = adj_mmr2_pcov / 100,
+         prov = factor(prov, levels = order_of_names)) |>
+  pivot_longer(mmr2_pcov:adj_mmr2_pcov) %>% 
+  mutate(name = case_when(
+    name == "mmr2_pcov" ~ "скорректированные данные с учетом отказов и медицинских противопоказаний", 
+    name == "adj_mmr2_pcov" ~ "охват вакцинацией подлежащего населения по форме №4", 
+    T ~ name
+  )) |>
+  ggplot() +
+  geom_tile(aes(x = year, y = prov, fill = value), color = "black") +
+  scale_fill_viridis_c(labels = scales::percent, direction = -1) + 
+  facet_wrap(~name) +
+  theme_bw() +
+  theme(
+    panel.grid = element_blank()
+  ) +
+  labs(
+    x = "год", y = "территория", fill = "Процент"
+  )
 
 fig3_4 <- ggarrange(fig3, fig4) |> 
   annotate()
