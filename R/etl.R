@@ -150,12 +150,39 @@ kaz$vacc_cov <- x
 rm(x)
 
 #load measles data
-x <- list.files(here("data/raw/measles"), full.names = T, recursive = T, pattern = "xls") %>%
-  {.[1]}
+x <- list.files(here("data/raw/measles"), full.names = T, recursive = T, pattern = "xls") |>
+  lapply(extract_measles)
 
-file <- read_excel("C:/Users/ynm2/Desktop/gitrepos/kaz-weekly-surveillance/data/raw/measles/2014_07.xlsx", sheet = "Корь", skip = 5) |> 
-  select(c("...1","Число подтвержденных случаевНРЛ +ЦСЭЭ (суммарно)"))
+error_files <- x[lapply(x, is.character) |> unlist()] |> 
+  unlist()
 
+measles <- x[lapply(x, is_tibble) |> unlist()] |> 
+  bind_rows() |> 
+  filter(year >= 2017) |> 
+  arrange(year, week, prov)
 
+inc_measles <- measles |> 
+  group_by(year, prov) |> 
+  arrange(week) |> 
+  mutate(
+    `<1` = `<1` - lag(`<1`, default = `<1`[1]), 
+    `1-4` = `1-4` - lag(`1-4`, default = `1-4`[1]), 
+    `5-9` = `5-9` - lag(`5-9`, default = `5-9`[1]), 
+    `10-14` = `10-14` - lag(`10-14`, default = `10-14`[1]), 
+    `15-19` = `15-19` - lag(`15-19`, default = `15-19`[1]), 
+    `20-29` = `20-29` - lag(`20-29`, default = `20-29`[1]), 
+    `>30` = `>30` - lag(`>30`, default = `>30`[1]), 
+    `conf_cases` = `conf_cases` - lag(`conf_cases`, default = `conf_cases`[1]), 
+  )
 
+kaz$measles <- measles 
+
+kaz$inc_measles <- inc_measles
+
+rm(measles)
+rm(inc_measles)
+rm(x)
+
+write_rds(kaz, file = here("data/int/kaz.rds"))
+write_rds(error_files, file = here("data/int/measles_error_files.rds"))
 
