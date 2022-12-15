@@ -161,7 +161,33 @@ measles <- x[lapply(x, is_tibble) |> unlist()] |>
   filter(year >= 2017) |> 
   arrange(year, week, prov)
 
-inc_measles <- measles |> 
+
+kaz$measles <- measles 
+
+kaz$measles <- kaz$measles |> 
+  mutate(
+    prov = case_when(
+      prov == "Алматы" ~ "г. Алматы",
+      prov == "Астана" ~ "г. Астана",
+      prov == "ВКО" ~ "Восточно-Казахстанская",
+      prov == "Жамбыльская" ~ "Жамбылская",
+      prov == "ЗКО" ~ "Западно-Казахстанская",
+      prov == "СКО" ~ "Северо-Казахстанская",
+      prov == "ЮКО" ~ "Южно-Казахстанская",
+      prov == "Шымкент" ~ "г. Шымкент",
+      prov == "Задано-Казахстанская" ~ "Западно-Казахстанская",
+      prov == "Туркестанскяа" ~ "Туркестанская",
+      prov == "г.Нур-Султан" ~ "г. Астана",
+      prov == "г.Шымкент" ~ "г. Шымкент",
+      prov == "Нур-Султан" ~ "г. Астана",
+      prov == "г.Алматы" ~ "г. Алматы",
+      prov == "г. Нур-Султан" ~ "г. Астана",
+      prov == "Турскестанская" ~ "Туркестанская", 
+      T ~ prov
+    )
+  ) 
+
+inc_measles <- kaz$measles |> 
   group_by(year, prov) |> 
   arrange(week) |> 
   mutate(
@@ -174,8 +200,6 @@ inc_measles <- measles |>
     `>30` = `>30` - lag(`>30`, default = `>30`[1]), 
     `conf_cases` = `conf_cases` - lag(`conf_cases`, default = `conf_cases`[1]), 
   )
-
-kaz$measles <- measles 
 
 kaz$inc_measles <- inc_measles
 
