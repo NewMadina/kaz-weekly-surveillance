@@ -23,4 +23,4 @@ c(
 
 original_locale <- Sys.getlocale()
 write_rds(original_locale, "resources/original.locale.rds")
-
+rm(original_locale)
