@@ -1,3 +1,12 @@
+library(scales)
+library(tidyverse)
+library(scales)
+library(lubridate)
+library(ggpubr)
+
+kaz <- read_rds(here("data/int/kaz.rds"))
+
+
 #Figure 1
 fig1 <- kaz$pop |> 
   #filtering out all overlapping categories that we may not want to plot
@@ -137,10 +146,8 @@ fig4 <- kaz$vacc_cov |>
     x = "год", y = "территория", fill = "скорректированные \nданные с учетом отказов \nи медицинских противопоказаний"
   )
 
-x <- "График сравнительного анализа охвата вакцинацией против кори,РК, 2013-2022гг."
 
-
-kaz$vacc_cov |> 
+fig3_4 <- kaz$vacc_cov |> 
   select(prov, year, mmr2_pcov, adj_mmr2_pcov) |> 
   mutate(year = factor(year, levels = as.character(2013:2022)),
          mmr2_pcov = mmr2_pcov / 100, 
@@ -148,8 +155,8 @@ kaz$vacc_cov |>
          prov = factor(prov, levels = order_of_names)) |>
   pivot_longer(mmr2_pcov:adj_mmr2_pcov) %>% 
   mutate(name = case_when(
-    name == "mmr2_pcov" ~ "скорректированные данные с учетом отказов и медицинских противопоказаний", 
-    name == "adj_mmr2_pcov" ~ "охват вакцинацией подлежащего населения по форме №4", 
+    name == "mmr2_pcov" ~ "Скорректированные данные с учетом отказов\nи медицинских противопоказаний", 
+    name == "adj_mmr2_pcov" ~ "Охват вакцинацией подлежащего населения по форме №4", 
     T ~ name
   )) |>
   ggplot() +
@@ -161,13 +168,12 @@ kaz$vacc_cov |>
     panel.grid = element_blank()
   ) +
   labs(
-    x = "год", y = "территория", fill = "Процент"
+    x = "год", y = "территория", fill = "Процент",
+    title = "График сравнительного анализа охвата вакцинацией против кори,РК, 2013-2022гг."
   )
 
-fig3_4 <- ggarrange(fig3, fig4) |> 
-  annotate()
 
-ggsave(here("output/fig3_4.png"),plot = , dpi = 300, width = 18, height = 6)
+ggsave(here("output/fig3_4.png"),plot = , dpi = 300, width = 12, height = 5)
 
 
 #Reported OPV coverage
@@ -183,11 +189,15 @@ fig5 <- kaz$vacc_cov |>
          bopv4_pcov = bopv4_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = год, y = территория, fill = "охват вакцинацией \nподлежащего населения \nпо форме №4"), title = "График охвата вакцинацией против полиомиелита, РК, 2013-2022гг.", color = "black") +
+  geom_tile(aes(x = year, y = prov, fill = bopv4_pcov), color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1) + 
   theme_bw() +
   theme(
     panel.grid = element_blank()
+  ) +
+  labs(
+    x = "год", y = "территория", fill = "охват вакцинацией \nподлежащего населения \nпо форме №4",
+    title = "График охвата вакцинацией против полиомиелита, РК, 2013-2022гг."
   )
 
 ggsave(here("output/fig5.png"),plot = fig5, dpi = 300, width = 8, height = 6)
@@ -203,11 +213,15 @@ order_of_names <- kaz$vacc_cov |>
 fig6 <- kaz$vacc_cov |> 
   mutate(prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = год, y = территория, fill = "отклонение охвата \nвакцинации"), title = "Сопоставление расхождений в знаменателях,стандартного определения вакцинации с учетом отказов и мед.отводов, РК, 2013-2022гг.", color = "black") +
+  geom_tile(aes(x = year, y = prov, fill = diff_mmr2_pcov), color = "black") +
   scale_fill_gradient2(low = muted("green"), high = muted("red"), midpoint = 0, labels = scales::percent) + 
   theme_bw() +
   theme(
     panel.grid = element_blank()
+  ) +
+  labs(
+    x = "год", y = "территория", fill = "отклонение охвата \nвакцинации", 
+    title = "Сопоставление расхождений в знаменателях,\nстандартного определения вакцинации\nс учетом отказов и мед.отводов, РК, 2013-2022гг."
   )
 
 ggsave(here("output/fig6.png"),plot = fig6, dpi = 300, width = 8, height = 6)
