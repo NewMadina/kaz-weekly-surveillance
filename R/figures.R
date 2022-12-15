@@ -3,6 +3,7 @@ library(tidyverse)
 library(scales)
 library(lubridate)
 library(ggpubr)
+library(ggridges)
 
 kaz <- read_rds(here("data/int/kaz.rds"))
 
@@ -225,5 +226,43 @@ fig6 <- kaz$vacc_cov |>
   )
 
 ggsave(here("output/fig6.png"),plot = fig6, dpi = 300, width = 8, height = 6)
+
+
+#Fig 7: Measles epidemic curve by province
+# kaz$inc_measles |> 
+#   filter(prov != "Южно-Казахстанская") |>
+#   mutate(date = as_date(paste(year, week, 1), format = "%Y %U %u")) |> 
+#   filter(date >= as_date("2018-08-01") & date <= as_date("2021-01-01")) |>
+#   mutate(conf_cases = ifelse(conf_cases < 0, 0, conf_cases)) |>
+#   ggplot() + 
+#   geom_bar(aes(x = date, y = conf_cases), stat = "identity") + 
+#   facet_wrap(~prov) +
+#   theme_bw() + 
+#   theme(
+#     axis.text.x = element_text(angle = 90, hjust = 1)
+#   ) +
+#   labs(x = "Date", y = "Confirmed Cases", title = "Measles epidemic curve by regions in Kazakhstan")
+
+fig7 <- kaz$inc_measles |> 
+  filter(prov != "Южно-Казахстанская") |>
+  mutate(date = as_date(paste(year, week, 1), format = "%Y %U %u")) |> 
+  filter(date >= as_date("2018-08-01") & date <= as_date("2021-01-01")) |>
+  mutate(conf_cases = ifelse(conf_cases < 0, 0, conf_cases)) |>
+  ggplot() + 
+  geom_density_ridges2(aes(x = date, y = prov, height = conf_cases), scale = 5, 
+                      stat = "identity", alpha = 0.8) + 
+  theme_bw() + 
+  labs(x = "Дата", 
+       y = "Территория", 
+       title = "Эпидемические кривые заболеваемости кори по территориям РК",
+       caption = "На данном рисунке мы видим два четких изначальных пика эпидемии в 2019 и 2020 году.\n
+       Эпидемия быстро идет на убыль в территориях с большой численностью населения. Однако заболеваемость остается\n
+       эндемичной в других регионах, предполагая накопление восприимчивого населения в городской местности и\n
+       небольшие кластеры невакцинированных лиц, поддерживающих эндемичность на территориях \n
+       с низкой плотностью населения.")
+
+ggsave(here("output/fig7.png"),plot = fig7, dpi = 300, width = 8, height = 8)
+
+
 
 
