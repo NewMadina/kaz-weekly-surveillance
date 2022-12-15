@@ -109,7 +109,7 @@ fig3 <- kaz$vacc_cov |>
          mmr2_pcov = mmr2_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = year, y = prov, fill = mmr2_pcov), color = "black") +
+  geom_tile(aes(x = год, y = территория, fill = "охват вакцинацией \nподлежащего населения \nпо форме №4"), color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1, limits = c(0.75,1.05)) + 
   theme_bw() +
   theme(
@@ -124,14 +124,19 @@ fig4 <- kaz$vacc_cov |>
          adj_mmr2_pcov = adj_mmr2_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = year, y = prov, fill = adj_mmr2_pcov), color = "black") +
+  geom_tile(aes(x = год, y = территория, fill = "скорректированные \nданные с учетом отказов \nи медицинских противопоказаний"), color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1, limit = c(0.75, 1.05)) + 
   theme_bw() +
   theme(
     panel.grid = element_blank()
   )
 
-ggsave(here("output/fig3_4.png"),plot = ggarrange(fig3, fig4), dpi = 300, width = 18, height = 6)
+x <- "График сравнительного анализа охвата вакцинацией против кори,РК, 2013-2022гг."
+
+fig3_4 <- ggarrange(fig3, fig4) |> 
+  annotate()
+
+ggsave(here("output/fig3_4.png"),plot = , dpi = 300, width = 18, height = 6)
 
 
 #Reported OPV coverage
@@ -147,7 +152,7 @@ fig5 <- kaz$vacc_cov |>
          bopv4_pcov = bopv4_pcov / 100, 
          prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = year, y = prov, fill = bopv4_pcov), color = "black") +
+  geom_tile(aes(x = год, y = территория, fill = "охват вакцинацией \nподлежащего населения \nпо форме №4"), title = "График охвата вакцинацией против полиомиелита, РК, 2013-2022гг.", color = "black") +
   scale_fill_viridis_c(labels = scales::percent, direction = -1) + 
   theme_bw() +
   theme(
@@ -167,7 +172,7 @@ order_of_names <- kaz$vacc_cov |>
 fig6 <- kaz$vacc_cov |> 
   mutate(prov = factor(prov, levels = order_of_names)) |>
   ggplot() +
-  geom_tile(aes(x = year, y = prov, fill = diff_mmr2_pcov), color = "black") +
+  geom_tile(aes(x = год, y = территория, fill = "отклонение охвата \nвакцинации"), title = "Сопоставление расхождений в знаменателях,стандартного определения вакцинации с учетом отказов и мед.отводов, РК, 2013-2022гг.", color = "black") +
   scale_fill_gradient2(low = muted("green"), high = muted("red"), midpoint = 0, labels = scales::percent) + 
   theme_bw() +
   theme(
