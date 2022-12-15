@@ -122,3 +122,62 @@ extract_vacc <- function(x){
     mutate_at(-1, as.numeric)
   
 }
+
+#' @description Extract measles data
+#' @param x string: absolute path of measles data
+#' @returns tibble with measles data 
+extract_measles <- function(x){
+  
+  return(
+    tryCatch(
+      {
+        
+        sheet_num <- excel_sheets(x) |>
+          tolower() %>%
+          {which(. == "корь")}
+        
+        test <- read_excel(x, sheet = sheet_num) 
+        
+        
+        #check which row contains our value of interest
+        does_not_contain <- T
+        row <- 0
+        while(does_not_contain){
+          row <- row + 1
+          does_not_contain <- startsWith(as.character(test[row,]), "Возрастной") |> 
+            sum(na.rm = T) %>%
+            {. == 0 | is.na(.)}
+        }
+        
+        file <- read_excel(path = x, sheet = sheet_num, skip = row) %>%
+          {set_names(.,str_replace_all(names(.), fixed(" "), ""))} |>
+          select(c(1, "Возрастнойдиапазонзаболевших", "...6", "...7", "...8", "...9", "...10", "...11", starts_with("Числоподтвержденных"))) %>%
+          {.[-c(1,2),]} |>    
+          set_names(c("prov", "<1", "1-4", "5-9", "10-14", "15-19", "20-29", ">30", "conf_cases"))
+        
+        file <- file[-c(which(file$prov == "РК"):nrow(file)),]
+        
+        y <- str_split(x, "_") %>%
+          {
+            list(
+              "year" = substr(.[[1]][1],nchar(.[[1]][1])-3, nchar(.[[1]][1])), 
+              "week" = substr(.[[1]][2],0, 2)
+            )
+          }
+        
+        file <- file |> 
+          mutate(
+            year = as.numeric(y$year), 
+            week = as.numeric(y$week)
+          )
+        
+        file <- file %>%
+          mutate_at(-1, as.numeric)
+        
+        return(file)
+      },
+      error = function(e){return(x)}
+    )
+  )
+}
+
